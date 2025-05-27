@@ -31,7 +31,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="expenses"
+        name="expenses/index"
         options={{
           title: 'Expenses',
           tabBarIcon: ({ color, size }) => <DollarSign color={color} size={size} />,

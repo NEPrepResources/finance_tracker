@@ -10,6 +10,7 @@ import {
 } from '@expo-google-fonts/poppins';
 import { SplashScreen } from 'expo-router';
 import React from 'react';
+import { ToastProvider } from '@/contexts/ToastContext';
 
 // Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
@@ -38,13 +39,13 @@ export default function RootLayout() {
   }
 
   return (
-    <>
+    <ToastProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />
-    </>
+    </ToastProvider>
   );
 }

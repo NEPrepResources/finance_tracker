@@ -2,8 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import { router } from 'expo-router';
 import { authService, LoginCredentials } from '@/services/authService';
 import { AuthState, User } from '@/types';
+import { useToast } from '@/contexts/ToastContext';
 
 export const useAuth = () => {
+  const { showToast } = useToast();
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
@@ -57,6 +59,9 @@ export const useAuth = () => {
         error: null,
       });
       
+      // Show success toast
+      showToast('Successfully logged in!', 'success');
+      
       // Navigate to home screen on successful login
       router.replace('/(tabs)');
       return result.user;
@@ -69,7 +74,7 @@ export const useAuth = () => {
       });
       throw error;
     }
-  }, []);
+  }, [showToast]);
 
   // Logout function
   const logout = useCallback(() => {
