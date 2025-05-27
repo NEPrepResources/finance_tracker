@@ -1,11 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { router } from 'expo-router';
 import { authService, LoginCredentials } from '@/services/authService';
 import { AuthState, User } from '@/types';
-import { useToast } from '@/contexts/ToastContext';
 
-export const useAuth = () => {
-  const { showToast } = useToast();
+interface AuthContextType extends AuthState {
+  login: (credentials: LoginCredentials) => Promise<User>;
+  logout: () => void;
+  updateUser: (user: User) => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     isAuthenticated: false,
@@ -13,8 +19,8 @@ export const useAuth = () => {
     error: null,
   });
 
-  // Initialize auth state on component mount
-  useEffect(() => {
+  // Initialize auth state
+  React.useEffect(() => {
     const initializeAuth = () => {
       try {
         const isAuthenticated = authService.isAuthenticated();
@@ -26,7 +32,6 @@ export const useAuth = () => {
             isLoading: false,
             error: null,
           });
-          router.replace('/(tabs)');
         } else {
           setAuthState({
             user: null,
@@ -34,7 +39,10 @@ export const useAuth = () => {
             isLoading: false,
             error: null,
           });
-          router.replace('/(auth)/login');
+          // Only navigate to login if we're not already there
+          if (!router.canGoBack()) {
+            router.replace('/(auth)/login');
+          }
         }
       } catch (error) {
         setAuthState({
@@ -60,12 +68,6 @@ export const useAuth = () => {
         isLoading: false,
         error: null,
       });
-      
-      // Show success toast
-      showToast('Successfully logged in!', 'success');
-      
-      // Navigate to home screen on successful login
-      router.replace('/(tabs)');
       return result.user;
     } catch (error: any) {
       setAuthState({
@@ -76,7 +78,7 @@ export const useAuth = () => {
       });
       throw error;
     }
-  }, [showToast]);
+  }, []);
 
   // Logout function
   const logout = useCallback(() => {
@@ -87,8 +89,6 @@ export const useAuth = () => {
       isLoading: false,
       error: null,
     });
-    
-    // Navigate to login screen on logout
     router.replace('/(auth)/login');
   }, []);
 
@@ -97,10 +97,24 @@ export const useAuth = () => {
     setAuthState((prev) => ({ ...prev, user }));
   }, []);
 
-  return {
-    ...authState,
-    login,
-    logout,
-    updateUser,
-  };
+  return (
+    <AuthContext.Provider
+      value={{
+        ...authState,
+        login,
+        logout,
+        updateUser,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };

@@ -1,5 +1,6 @@
 import api from './api';
 import { ENDPOINTS } from '@/constants/api';
+import { authService } from './authService'; // Import authService
 
 // Types
 export interface Expense {
@@ -25,7 +26,7 @@ export const expenseService = {
   // Get all expenses for current user
   async getAllExpenses(): Promise<Expense[]> {
     try {
-      const user = global.currentUser;
+      const user = authService.getCurrentUser(); // Use authService instead of global.currentUser
       if (!user) throw new Error('User not authenticated');
       
       const response = await api.get(ENDPOINTS.EXPENSES);
@@ -52,7 +53,10 @@ export const expenseService = {
   // Create new expense
   async createExpense(data: ExpenseCreateData): Promise<Expense> {
     try {
-      const response = await api.post(ENDPOINTS.EXPENSES, data);
+      const user = authService.getCurrentUser(); // Check for authenticated user
+      if (!user) throw new Error('User not authenticated');
+      
+      const response = await api.post(ENDPOINTS.EXPENSES, { ...data, userId: user.id });
       return response.data;
     } catch (error) {
       console.error('Create expense error:', error);
@@ -63,6 +67,9 @@ export const expenseService = {
   // Delete expense
   async deleteExpense(id: string): Promise<void> {
     try {
+      const user = authService.getCurrentUser(); // Check for authenticated user
+      if (!user) throw new Error('User not authenticated');
+      
       await api.delete(`${ENDPOINTS.EXPENSES}/${id}`);
     } catch (error) {
       console.error('Delete expense error:', error);

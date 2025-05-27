@@ -1,9 +1,9 @@
 export const COLORS = {
-  primary: '#FC4E68FF', // Light pink as requested
+  primary: '#FC4E68',
   primaryDark: '#ff9aa2',
-  secondary: '#b5eaea', // Light blue
+  secondary: '#b5eaea',
   secondaryDark: '#98d6ea',
-  accent: '#ffd1dc', // Softer pink
+  accent: '#ffd1dc',
   background: '#ffffff',
   card: '#f9f9f9',
   text: '#333333',
@@ -11,13 +11,17 @@ export const COLORS = {
   success: '#4ade80',
   warning: '#fbbf24',
   error: '#f87171',
+  info: '#5856D6',
+  border: '#e5e7eb',
+  disabled: '#f3f4f6',
+  white: '#FFFFFF',
+  black: '#000000',
   available: '#a7f3d0', // Light green for available vehicles
   unavailable: '#fecaca', // Light red for unavailable
   pending: '#fef3c7', // Light yellow for pending status
   confirmed: '#bfdbfe', // Light blue for confirmed status
   completed: '#d1fae5', // Light green for completed status
   shadow: 'rgba(0, 0, 0, 0.05)',
-  border: '#e5e7eb',
 };
 
 export const SIZES = {

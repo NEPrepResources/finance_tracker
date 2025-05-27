@@ -8,48 +8,31 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
-import { User, AtSign, Lock } from 'lucide-react-native';
 import { COLORS, FONTS, SIZES } from '@/constants/theme';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import ErrorMessage from '@/components/ui/ErrorMessage';
-import { validateLoginForm } from '@/utils/validation';
-import { useAuth } from '@/hooks/useAuth';
+import { TextInput } from '@/components/ui/TextInput';
+import { Button } from '@/components/ui/Button';
 
-const LoginForm: React.FC = () => {
-  const { login, isLoading, error } = useAuth();
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-  });
-  
-  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
-  
-  // Handle input changes
-  const handleChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when typing
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
+interface LoginFormProps {
+  onSubmit: (username: string, password: string) => Promise<void>;
+  error?: string;
+}
+
+const LoginForm: React.FC<LoginFormProps> = ({ onSubmit, error }) => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   
   // Handle login
-  const handleLogin = async () => {
-    // Validate form
-    const errors = validateLoginForm(formData);
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
+  const handleSubmit = async () => {
+    if (!username || !password) return;
     
+    setLoading(true);
     try {
-      await login(formData);
+      await onSubmit(username, password);
     } catch (error) {
-      // Error is already handled by the useAuth hook
-      console.log('Login error in component:', error);
+      // Error is handled by parent component
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -67,34 +50,31 @@ const LoginForm: React.FC = () => {
         <Text style={styles.subtitle}>Track your spending, achieve your goals</Text>
       </View>
       
-      {error && <ErrorMessage message={error} />}
+      {error && (
+        <Text style={styles.errorText}>{error}</Text>
+      )}
       
       <View style={styles.formContainer}>
-        <Input
-          label="Username"
-          placeholder="Enter your username"
-          leftIcon={<AtSign size={20} color={COLORS.textLight} />}
-          value={formData.username}
-          onChangeText={(value) => handleChange('username', value)}
-          error={formErrors.username}
-          autoCapitalize="none"
+        <TextInput
+          placeholder="Username"
+          value={username}
+          onChangeText={setUsername}
+          style={styles.input}
         />
         
-        <Input
-          label="Password"
-          placeholder="Enter your password"
-          leftIcon={<Lock size={20} color={COLORS.textLight} />}
-          value={formData.password}
-          onChangeText={(value) => handleChange('password', value)}
-          error={formErrors.password}
-          isPassword={true}
+        <TextInput
+          placeholder="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
         />
         
         <Button
-          title="Log In"
-          onPress={handleLogin}
-          isLoading={isLoading}
-          style={styles.loginButton}
+          title="Login"
+          onPress={handleSubmit}
+          isLoading={loading}
+          style={styles.button}
         />
         
         <TouchableOpacity style={styles.forgotPassword}>
@@ -144,8 +124,18 @@ const styles = StyleSheet.create({
   formContainer: {
     marginBottom: SIZES.xl,
   },
-  loginButton: {
-    marginTop: SIZES.md,
+  input: {
+    marginBottom: SIZES.md,
+  },
+  button: {
+    marginTop: SIZES.sm,
+  },
+  errorText: {
+    color: COLORS.error,
+    fontFamily: FONTS.medium,
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: SIZES.md,
   },
   forgotPassword: {
     alignItems: 'center',
